@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Text;
 
-class NSystem
+public class NSysException : Exception
+{
+    public NSysException(string message) : base(message) { }
+}
+public class NSystem
 {
     private const string Stellenwerte = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -66,6 +70,46 @@ class NSystem
     }
     #endregion Umwandlungen
 
+    #region Operatorüberladungen
+    // Sinnvolle Operatorüberladungen:
+    public static NSystem operator +(NSystem a, NSystem b)
+    {
+        return new NSystem(a.Dezimalwert + b.Dezimalwert, a.Zahlensystem);
+    }
+
+    public static NSystem operator -(NSystem a, NSystem b)
+    {
+        if (a.Dezimalwert < b.Dezimalwert)
+            throw new NSysException("Ergebnis kann nicht negativ sein.");
+        return new NSystem(a.Dezimalwert - b.Dezimalwert, a.Zahlensystem);
+    }
+
+    public static NSystem operator *(NSystem a, NSystem b)
+    {
+        return new NSystem(a.Dezimalwert * b.Dezimalwert, a.Zahlensystem);
+    }
+
+    public static NSystem operator /(NSystem a, NSystem b)
+    {
+        if (b.Dezimalwert == 0)
+            throw new DivideByZeroException("Division durch Null ist nicht erlaubt.");
+        return new NSystem(a.Dezimalwert / b.Dezimalwert, a.Zahlensystem);
+    }
+
+    public static NSystem operator ++(NSystem a)
+    {
+        return new NSystem(a.Dezimalwert + 1, a.Zahlensystem);
+    }
+
+    public static NSystem operator --(NSystem a)
+    {
+        if (a.Dezimalwert == 0)
+            throw new NSysException("Wert kann nicht unter 0 sinken.");
+        return new NSystem(a.Dezimalwert - 1, a.Zahlensystem);
+    }
+    // << und >> sind in diesem Fall nicht sinnvoll, da sie Bits verschieben und damit die Struktur unserer Darstellung des Zahlenwertsystems zerstören
+    #endregion Operatorüberladungen
+
     // Gibt Objekt als String aus
     public override string ToString()
     {
@@ -80,4 +124,11 @@ class NSystem
             throw new ArgumentOutOfRangeException(nameof(baseSystem), "Basis muss zwischen 2 und 36 liegen.");
     }
     #endregion Exceptions
+}
+
+public class NSys16 : NSystem
+{
+    public NSys16(string hexValue) : base(hexValue, 16) { }
+
+    public NSys16(ulong decimalValue) : base(decimalValue, 16) { }
 }
